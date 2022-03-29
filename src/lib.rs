@@ -6,34 +6,59 @@ mod tests {
     use super::*;
 
     #[test]
-    fn one_result() {
+    fn case_sensitive() {
         let query = "duct";
         let contents = "\
 Rust:
 safe, fast, productive.
 Pick three.";
 
-        assert_eq!(vec!["safe, fast, productive."], search(query, contents));
+        assert_eq!(
+            vec!["safe, fast, productive."],
+            search(query, contents, true)
+        );
+    }
+
+    #[test]
+    fn case_insensitive() {
+        let query = "rUsT";
+        let contents = "\
+Rust:
+safe, fast, productive.
+Pick three.
+Trust me.";
+
+        assert_eq!(vec!["Rust:", "Trust me."], search(query, contents, false));
     }
 }
 
 pub fn run(config: &Config) -> Result<(), Box<dyn Error>> {
-    println!("Searching for {}", &config.query);
-    println!("In file {}", &config.filename);
+    println!("<{}> Searching for {}", &config.filename, &config.query);
 
     //Use of ? operator: if read to string returns an error,
     //will stop executing this function and return that error.
     let contents: String = fs::read_to_string(&config.filename)?;
 
-    println!("With text:\n{}", contents);
+    //println!("With text:\n{}", contents);
+
+    let results = search(&config.query, &contents, true);
+
+    println!();
+    println!("Found {} results", results.len());
+    for line in results {
+        println!(": {}", line);
+    }
+
     Ok(())
 }
 
-pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
+pub fn search<'a>(query: &str, contents: &'a str, case_sensitive: bool) -> Vec<&'a str> {
     let mut results = Vec::new();
 
     for line in contents.lines() {
-        if line.contains(query) {
+        if (case_sensitive && line.contains(query))
+            || (!case_sensitive && line.to_lowercase().contains(&query.to_lowercase()))
+        {
             results.push(line);
         }
     }
