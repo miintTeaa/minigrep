@@ -3,7 +3,7 @@ use std::fs;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let config: Config = match parse_config(&args) {
+    let config: Config = match Config::new(&args) {
         Ok(config) => config,
         Err(e) => panic!("Failed to parse config: {}", e),
     };
@@ -32,8 +32,4 @@ impl Config {
             filename: args[2].clone(),
         })
     }
-}
-
-fn parse_config(args: &[String]) -> Result<Config, &'static str> {
-    Config::new(args)
 }
