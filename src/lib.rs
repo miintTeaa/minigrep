@@ -1,5 +1,5 @@
-use std::error::Error;
 use std::fs;
+use std::error::Error;
 
 pub fn run(config: &Config) -> Result<(), Box<dyn Error>> {
     println!("Searching for {}", &config.query);
