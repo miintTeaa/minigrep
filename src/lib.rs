@@ -1,3 +1,4 @@
+use std::env;
 use std::error::Error;
 use std::fs;
 
@@ -41,7 +42,7 @@ pub fn run(config: &Config) -> Result<(), Box<dyn Error>> {
 
     //println!("With text:\n{}", contents);
 
-    let results = search(&config.query, &contents, true);
+    let results = search(&config.query, &contents, config.case_sensitive);
 
     println!();
     println!("Found {} results", results.len());
@@ -76,6 +77,7 @@ pub fn search<'a>(query: &str, contents: &'a str, case_sensitive: bool) -> Vec<&
 pub struct Config {
     query: String,
     filename: String,
+    case_sensitive: bool,
 }
 
 impl Config {
@@ -84,9 +86,30 @@ impl Config {
             return Err("Not enough arguments");
         }
 
+        let mut case_sensitive = match env::var("CASE_INSENSITIVE") {
+            Err(_) => false,
+            Ok(case_ins_val) => case_ins_val == "yes",
+        };
+
+        for i in 3..args.len() {
+            match args[i].as_str() {
+                "--nocase" => case_sensitive = false,
+                "--case" => case_sensitive = true,
+                arg => return Err(leak_into_str(format!("Invalid argument {}", arg))),
+            };
+        }
+
         Ok(Config {
             query: args[1].clone(),
             filename: args[2].clone(),
+            case_sensitive,
         })
     }
+}
+
+//Do not use lightly! Will never free string until program exits.
+//Mostly necessary for formatted error messages, since they need
+//a static lifetime anyways.
+fn leak_into_str(s: String) -> &'static str {
+    Box::leak(s.into_boxed_str())
 }
