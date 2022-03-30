@@ -18,21 +18,21 @@ You can also set case sensitivity mode using an environment variable:
 CASE_INSENSITIVE will cause every search to be case insensitive by default if set to \"yes\" (unless overriden by an argument)
 "
         );
-        
+
         process::exit(0);
     }
 
     let config: Config = match Config::new(&args) {
         Ok(config) => config,
         Err(e) => {
-            println!("Failed to parse config: \"{}\"", e);
+            eprintln!("Failed to parse config: \"{}\"", e);
 
             process::exit(1);
         }
     };
 
     if let Err(e) = minigrep::run(&config) {
-        println!("Minigrep failed: \"{}\"", e);
+        eprintln!("Minigrep failed: \"{}\"", e);
 
         process::exit(2);
     }
